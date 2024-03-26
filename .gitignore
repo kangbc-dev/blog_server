@@ -137,7 +137,6 @@ dist
 nest-cli.json
 tsconfig.build.json
 tsconfig.json
-package.json
 yarn.lock
 
 #test
