@@ -5,6 +5,7 @@ import { UserModule } from './user/user.module';
 import * as joi from 'joi';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
+import { User } from './user/entities/user.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { ApolloDriver } from '@nestjs/apollo';
       database: process.env.DB_NAME,
       synchronize: true, //typeOrm이 db에 연결할 때 내 모듈의 현재 상태로 마이그레이션 한다는 의미(true일때)
       logging: process.env.NODE_ENV !== 'prod', //db조작시 콘솔에 표시해주는 기능
-      entities: [], //db 생성할 entity들의 배열
+      entities: [User], //db 생성할 entity들의 배열
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true, //메모리에서 스키마 자동 생성
