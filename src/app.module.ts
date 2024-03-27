@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
@@ -6,6 +11,8 @@ import * as joi from 'joi';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver } from '@nestjs/apollo';
 import { User } from './user/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
+import { authMiddleware } from './auth/auth.middleware';
 
 @Module({
   imports: [
@@ -19,6 +26,7 @@ import { User } from './user/entities/user.entity';
         DB_USERNAME: joi.string().required(),
         DB_PASSWORD: joi.string().required(),
         DB_NAME: joi.string().required(),
+        PRIVATE_KEY: joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -36,9 +44,17 @@ import { User } from './user/entities/user.entity';
       autoSchemaFile: true, //메모리에서 스키마 자동 생성
       driver: ApolloDriver,
     }),
+    AuthModule,
     UserModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(authMiddleware).forRoutes({
+      path: '/graphql',
+      method: RequestMethod.POST,
+    });
+  }
+}
