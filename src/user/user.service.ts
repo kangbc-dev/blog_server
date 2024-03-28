@@ -69,8 +69,11 @@ export class UserService {
           error: '비밀번호가 일치하지 않습니다.',
         };
       }
-      const tokenResponse = this.authService.tokenGenerator(account.id);
-      if (!tokenResponse.ok) {
+      const { accessToken, refreshToken } = {
+        accessToken: this.authService.tokenGenerator(account.id),
+        refreshToken: this.authService.tokenGenerator(account.id, 'refresh'),
+      };
+      if (!accessToken.ok) {
         return {
           ok: false,
           error: '토큰을 생성할 수 없습니다.',
@@ -78,7 +81,8 @@ export class UserService {
       }
       return {
         ok: true,
-        token: tokenResponse.token,
+        accessToken: accessToken.token,
+        refreshToken: refreshToken.token,
       };
     } catch (e) {
       console.log(e);
@@ -87,14 +91,25 @@ export class UserService {
   }
 
   async findById({ userId }: UserProfileInput): Promise<UserProfileOutput> {
+    if (!userId) return { ok: false, error: '사용자를 찾을 수 없습니다.' };
     try {
-      const result = this.user.findOne({ where: { id: userId } });
+      console.log('userId');
+      console.log(userId);
+      const result = await this.user.findOne({ where: { id: userId } });
+      console.log('findById result');
+      console.log(result);
       if (!result) {
         return {
           ok: false,
           error: '',
         };
       }
-    } catch (e) {}
+      return {
+        ok: true,
+        user: result,
+      };
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

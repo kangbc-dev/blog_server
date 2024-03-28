@@ -5,7 +5,10 @@ import { User } from '../entities/user.entity';
 @ObjectType()
 export class signInOutput extends CoreOutputDto {
   @Field((type) => String, { nullable: true })
-  token?: string;
+  accessToken?: string;
+
+  @Field((type) => String, { nullable: true })
+  refreshToken?: string;
 }
 
 @InputType()
