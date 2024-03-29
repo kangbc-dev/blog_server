@@ -141,3 +141,5 @@ yarn.lock
 
 #test
 test/*
+
+*.pem
