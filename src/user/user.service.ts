@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Res } from '@nestjs/common';
 import {
   createAccountInput,
   createAccountOutput,
@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { signInInput, signInOutput } from './dtos/sign-in.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -47,15 +48,16 @@ export class UserService {
   }
 
   /** 로그인 (email: string, password: srting) */
-  async signIn(input: signInInput): Promise<signInOutput> {
+  async signIn(
+    input: signInInput,
+    @Res() res: Response,
+  ): Promise<signInOutput> {
     try {
       const account = await this.user.findOne({
         where: {
           email: input.email,
         },
       });
-      console.log('account');
-      console.log(account);
       if (!account) {
         return {
           ok: false,
@@ -79,10 +81,23 @@ export class UserService {
           error: '토큰을 생성할 수 없습니다.',
         };
       }
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        expires: new Date(Date.now() + 1000 * 60 * 60), // 쿠키 만료 시간 설정
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 쿠키 만료 시간 설정
+      });
+
       return {
         ok: true,
-        accessToken: accessToken.token,
-        refreshToken: refreshToken.token,
       };
     } catch (e) {
       console.log(e);
