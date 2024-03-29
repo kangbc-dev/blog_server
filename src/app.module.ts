@@ -43,7 +43,7 @@ import { authMiddleware } from './auth/auth.middleware';
     GraphQLModule.forRoot({
       autoSchemaFile: true, //메모리에서 스키마 자동 생성
       driver: ApolloDriver,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, res }) => ({ user: req['user'], req, res }),
     }),
     AuthModule,
     UserModule,
@@ -55,7 +55,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(authMiddleware).forRoutes({
       path: '/graphql',
-      method: RequestMethod.POST,
+      method: RequestMethod.ALL,
     }); //이 부분 떄문에, 미들웨어에서 토큰이 없을 때의 메소드 구분을 할 필요가 없음 POST가 아니면 애초에 토큰이 필요가 없기 때문
   }
 }
