@@ -10,6 +10,7 @@ import { signInInput, signInOutput } from './dtos/sign-in.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { Response } from 'express';
+import { signOutOutput } from './dtos/sign-out.dto';
 
 @Injectable()
 export class UserService {
@@ -86,16 +87,34 @@ export class UserService {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        expires: new Date(Date.now() + 1000 * 60 * 60), // 쿠키 만료 시간 설정
       });
 
       res.cookie('refresh_token', refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 쿠키 만료 시간 설정
       });
 
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      console.log(e);
+      throw new Error();
+    }
+  }
+
+  async signOut(context): Promise<signOutOutput> {
+    try {
+      const res: Response = context.res; //타입 명시
+      res.cookie('access_token', '', {
+        httpOnly: true,
+        expires: new Date(0),
+      });
+      res.cookie('refresh_token', '', {
+        httpOnly: true,
+        expires: new Date(0),
+      });
       return {
         ok: true,
       };

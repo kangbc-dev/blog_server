@@ -5,9 +5,10 @@ import {
 } from './dtos/create-account.dto';
 import { UserService } from './user.service';
 import { signInInput, signInOutput } from './dtos/sign-in.dto';
-import { UseGuards } from '@nestjs/common';
+import { ExecutionContext, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Response } from 'express';
+import { signOutOutput } from './dtos/sign-out.dto';
 
 @Resolver()
 export class UserResolver {
@@ -31,7 +32,13 @@ export class UserResolver {
     return this.userService.signIn(input, res);
   }
 
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
+  @Query((returns) => signOutOutput)
+  signOut(@Context() context: any): Promise<signOutOutput> {
+    return this.userService.signOut(context);
+  }
+
+  @UseGuards(AuthGuard)
   @Query((returns) => String)
   hello(): string {
     return 'hello';
