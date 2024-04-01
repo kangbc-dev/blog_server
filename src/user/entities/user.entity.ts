@@ -19,6 +19,11 @@ export class User extends CoreEntity {
   @IsString()
   password: string;
 
+  @Field((type) => String)
+  @Column()
+  @IsString()
+  nickname: string;
+
   @BeforeUpdate()
   async hashPassword(apassword: string): Promise<string> {
     console.log(apassword);
