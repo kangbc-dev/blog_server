@@ -35,6 +35,7 @@ export class UserService {
       const newUser = this.user.create({
         email: input.email,
         password: input.password,
+        nickname: input.nickname,
       });
       newUser.password = await newUser.hashPassword(input.password);
       const savedUser = await this.user.save(newUser);
