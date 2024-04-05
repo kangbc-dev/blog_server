@@ -56,6 +56,7 @@ export class authMiddleware implements NestMiddleware {
     //     throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     //   }
     // }
+    console.log('middleware end');
     next();
   }
 }
