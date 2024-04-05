@@ -1,8 +1,4 @@
 import { Injectable, Res } from '@nestjs/common';
-import {
-  createAccountInput,
-  createAccountOutput,
-} from './dtos/create-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +7,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
 import { Response } from 'express';
 import { signOutOutput } from './dtos/sign-out.dto';
+import { signUpInput, signUpOutput } from './dtos/sign-up.dto';
 
 @Injectable()
 export class UserService {
@@ -20,7 +17,10 @@ export class UserService {
   ) {}
 
   /** 회원가입 (email: string, password: srting) */
-  async createAccount(input: createAccountInput): Promise<createAccountOutput> {
+  async signUp(
+    input: signUpInput,
+    @Res() res: Response,
+  ): Promise<signUpOutput> {
     try {
       //이메일 검증
       const userExists = await this.user.findOne({
@@ -39,6 +39,29 @@ export class UserService {
       });
       newUser.password = await newUser.hashPassword(input.password);
       const savedUser = await this.user.save(newUser);
+      const { accessToken, refreshToken } = {
+        accessToken: this.authService.tokenGenerator(savedUser.id),
+        refreshToken: this.authService.tokenGenerator(savedUser.id, 'refresh'),
+      };
+      if (!accessToken.ok) {
+        return {
+          ok: false,
+          error: '토큰을 생성할 수 없습니다.',
+        };
+      }
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+      });
+
       console.log(savedUser);
       return {
         ok: true,
@@ -102,6 +125,28 @@ export class UserService {
     } catch (e) {
       console.log(e);
       throw new Error();
+    }
+  }
+
+  async checkToken(context: any): Promise<signOutOutput> {
+    try {
+      if (context?.user) {
+        console.log('checkToken');
+        console.log(context?.user);
+        return {
+          ok: true,
+        };
+      }
+      return {
+        ok: false,
+        error: '사용자를 찾을 수 없습니다.',
+      };
+    } catch (e) {
+      console.log(e);
+      return {
+        ok: false,
+        error: '토큰 검증에 실패했습니다.',
+      };
     }
   }
 

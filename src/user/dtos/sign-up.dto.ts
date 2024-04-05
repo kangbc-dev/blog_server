@@ -4,10 +4,10 @@ import { User } from '../entities/user.entity';
 import { IsString } from 'class-validator';
 
 @ObjectType()
-export class createAccountOutput extends CoreOutputDto {}
+export class signUpOutput extends CoreOutputDto {}
 
 @InputType()
-export class createAccountInput extends PickType(User, ['email', 'password']) {
+export class signUpInput extends PickType(User, ['email', 'password']) {
   @Field((type) => String)
   @IsString()
   nickname: string;
